@@ -1,0 +1,13 @@
+{
+  "name": "@simple-contract/core",
+  "version": "0.0.1",
+  "main": "./index.js",
+  "module": "./index.mjs",
+  "typings": "./index.d.ts",
+  "peerDependencies": {
+    "zod": "3.21.4"
+  },
+  "devDependencies": {
+    "zod": "3.21.4"
+  }
+}

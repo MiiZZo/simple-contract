@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@simple-contract/core": ["packages/core/src/index.ts"]
+      "@simple-contract/core": ["packages/core/src/index.ts"],
+      "@simple-contract/effector": ["packages/effector/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
