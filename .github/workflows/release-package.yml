@@ -1,0 +1,36 @@
+name: 'Publish'
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Install deps
+        run: yarn install --frozen-lockfile
+
+      - name: Extract tag
+        id: tagName
+        uses: olegtarasov/get-tag@v2.1
+        with:
+            tagRegex: '(?<package>.*)-(?<version>.*)'
+
+      - name: Create NPM config
+        run: npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: Build core package
+        if: steps.tagName.outputs.package == '@simple-contract/core'
+        run: npx nx run core:build
+      - name: Publish core package
+        if: steps.tagName.outputs.package == '@simple-contract/core'
+        run: npx nx run core:publish --args='--ver=$VER'
+        env:
+          VER: ${{ steps.tagName.outputs.version }}
