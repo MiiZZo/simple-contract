@@ -37,3 +37,12 @@ jobs:
         run: npx nx run core:publish --args='--ver=$VER'
         env:
           VER: ${{ steps.tagName.outputs.version }}
+
+      - name: Build effector package
+        if: steps.tagName.outputs.package == '@simple-contract/effector'
+        run: npx nx run effector:build
+      - name: Publish effector package
+        if: steps.tagName.outputs.package == '@simple-contract/effector'
+        run: npx nx run effector:publish --args='--ver=$VER'
+        env:
+          VER: ${{ steps.tagName.outputs.version }}
