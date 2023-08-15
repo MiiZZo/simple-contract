@@ -1,14 +1,14 @@
 import { z } from 'zod'
 import { replaceUrlParams } from './replace-url-params';
-import type { APIConfig, API, Route, RequestConfig } from './types';
+import type { ContractConfig, Contract, Route, RequestConfig } from './types';
 import { isRequestConfigWithBody, isRequestConfigWithParams, isRequestConfigWithQuery } from './guards';
 import { attachQuery } from './attach-query';
 
-export function createContract<T extends APIConfig>(baseUrl: string, config: T) {
-  const api = {} as API<T>;
+export function createContract<T extends ContractConfig>(baseUrl: string, config: T) {
+  const api = {} as Contract<T>;
 
   for (const scopeKey in config) {
-    api[scopeKey] = { path: config[scopeKey].path, routes: {} } as API<T>[typeof scopeKey];
+    api[scopeKey] = { path: config[scopeKey].path, routes: {} } as Contract<T>[typeof scopeKey];
     for (const _ in config[scopeKey].routes) {
       const endPointKey = _ as Extract<keyof T, string>;
       const endPoint = config[scopeKey].routes[endPointKey];

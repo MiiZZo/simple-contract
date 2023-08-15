@@ -55,7 +55,7 @@ export type RequestConfig = (
   | RequestConfigWithBodyAndParamsAndQuery
 );
 
-export type APIConfig = {
+export type ContractConfig = {
   [Property: string]: {
     path: `/${string}`;
     routes: {
@@ -78,7 +78,7 @@ export type Route<T extends RequestConfig> = {
   )
 };
 
-export type API<T extends APIConfig> = {
+export type Contract<T extends ContractConfig> = {
   [h in keyof T]: {
     path: ExactString<T[h]['path']>;
     routes: {
