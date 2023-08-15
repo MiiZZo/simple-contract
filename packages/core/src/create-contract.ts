@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { replaceUrlParams } from './replace-url-params';
-import type { APIConfig, API } from './types';
+import type { APIConfig, API, Route, RequestConfig } from './types';
 import { isRequestConfigWithBody, isRequestConfigWithParams, isRequestConfigWithQuery } from './guards';
 import { attachQuery } from './attach-query';
 
@@ -56,6 +56,6 @@ export function createContract<T extends APIConfig>(baseUrl: string, config: T) 
   return api;
 }
 
-export type InferResponsesTypes<T extends Record<string, z.ZodTypeAny>> = {
-  [Key in keyof T]: z.infer<T[Key]>;
-}[keyof T];
+export type InferResponsesTypes<T extends Route<RequestConfig>> = {
+  [Key in keyof T['responses']]: z.infer<T['responses'][Key]>;
+}[keyof T['responses']];

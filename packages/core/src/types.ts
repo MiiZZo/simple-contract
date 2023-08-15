@@ -70,11 +70,11 @@ export type Route<T extends RequestConfig> = {
   responses: T['responses'];
   fullStaticPath: string;
   getFullDynamicPath: (
-    T extends infer R ? R extends RequestConfigWithParamsAndQuery ?
-    (params: { params: z.infer<R['params']>; query: z.infer<R['query']> }) => string :
-    R extends RequestConfigWithParams ? (params: { params: z.infer<R['params']> }) => string :
-    R extends RequestConfigWithQuery ? (params: { query: z.infer<R['query']> }) => string :
-    () => string : () => string
+    T extends RequestConfigWithParamsAndQuery ?
+    (params: { params: z.infer<T['params']>; query: z.infer<T['query']> }) => string :
+    T extends RequestConfigWithParams ? (params: { params: z.infer<T['params']> }) => string :
+    T extends RequestConfigWithQuery ? (params: { query: z.infer<T['query']> }) => string :
+    () => string
   )
 };
 
