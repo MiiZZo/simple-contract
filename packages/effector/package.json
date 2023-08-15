@@ -1,0 +1,17 @@
+{
+  "name": "@simple-contract/effector",
+  "version": "0.0.1",
+  "main": "./index.js",
+  "module": "./index.mjs",
+  "typings": "./index.d.ts",
+  "peerDependencies": {
+    "@simple-contract/core": "^0.0.4",
+    "effector": "^22.8.6",
+    "zod": "3.21.4"
+  },
+  "devDependencies": {
+    "@simple-contract/core": "^0.0.4",
+    "effector": "^22.8.6",
+    "zod": "3.21.4"
+  }
+}
