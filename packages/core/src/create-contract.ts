@@ -56,6 +56,14 @@ export function createContract<T extends APIConfig>(baseUrl: string, config: T) 
   return api;
 }
 
-export type InferResponsesTypes<T extends Route<RequestConfig>> = {
-  [Key in keyof T['responses']]: z.infer<T['responses'][Key]>;
-}[keyof T['responses']];
+export type InferResponsesTypes<T extends (Route<RequestConfig>) | (Record<string, Route<RequestConfig>>)> = (
+  T extends Route<RequestConfig> ? (
+    {
+      [Key in keyof T['responses']]: z.infer<T['responses'][Key]>;
+    }
+  ) : T extends Record<string, Route<RequestConfig>> ? {
+    [ScopeKey in keyof T]: {
+      [ResponseKey in keyof T[ScopeKey]['responses']]: z.infer<T[ScopeKey]['responses'][ResponseKey]>;
+    }
+  } : never
+);
