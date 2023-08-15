@@ -1,6 +1,5 @@
-import { z } from 'zod'
 import { replaceUrlParams } from './replace-url-params';
-import type { ContractConfig, Contract, Route, RequestConfig } from './types';
+import type { ContractConfig, Contract } from './types';
 import { isRequestConfigWithBody, isRequestConfigWithParams, isRequestConfigWithQuery } from './guards';
 import { attachQuery } from './attach-query';
 
@@ -55,15 +54,3 @@ export function createContract<T extends ContractConfig>(baseUrl: string, config
 
   return api;
 }
-
-export type InferResponsesTypes<T extends (Route<RequestConfig>) | (Record<string, Route<RequestConfig>>)> = (
-  T extends Route<RequestConfig> ? (
-    {
-      [Key in keyof T['responses']]: z.infer<T['responses'][Key]>;
-    }
-  ) : T extends Record<string, Route<RequestConfig>> ? {
-    [ScopeKey in keyof T]: {
-      [ResponseKey in keyof T[ScopeKey]['responses']]: z.infer<T[ScopeKey]['responses'][ResponseKey]>;
-    }
-  } : never
-);

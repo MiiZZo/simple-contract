@@ -11,19 +11,21 @@ export interface BaseRequestConfig {
   path?: `/${string}`;
   method: Method;
   responses: Record<string, z.ZodTypeAny>;
+  query?: z.ZodObject<Record<string, z.ZodString | z.ZodNumber>, "strip", z.ZodTypeAny, Record<string, string | number>>;
+  body?: z.ZodTypeAny;
+  params?: z.ZodObject<Record<string, z.ZodString>, "strip", z.ZodTypeAny, Record<string, string>>;
 }
 
 export interface RequestConfigWithQuery extends BaseRequestConfig {
-  query: z.ZodObject<Record<string, z.ZodString | z.ZodNumber | z.ZodBoolean>>;
+  query: z.ZodObject<Record<string, z.ZodString | z.ZodNumber>, "strip", z.ZodTypeAny, Record<string, string | number>>;
 }
 
 export interface RequestConfigWithBody extends BaseRequestConfig {
-  method: Method;
   body: z.ZodTypeAny;
 }
 
 export interface RequestConfigWithParams extends BaseRequestConfig {
-  params: z.ZodObject<Record<string, z.ZodString>>;
+  params: z.ZodObject<Record<string, z.ZodString>, "strip", z.ZodTypeAny, Record<string, string>>;
 }
 
 export type RequestConfigWithBodyAndQuery = (
@@ -59,10 +61,14 @@ export type ContractConfig = {
   [Property: string]: {
     path: `/${string}`;
     routes: {
-      [Property: string]: RequestConfig;
+      [Property: string]: BaseRequestConfig;
     };
   }
 }
+
+type OmitUnknownFields<T> = {
+  [Key in keyof T as unknown extends T[Key] ? never : Key]: T[Key];
+};
 
 export type Route<T extends RequestConfig> = {
   path: T['path'] extends infer R ? R extends string ? ExactString<R> : null : null;
@@ -76,29 +82,34 @@ export type Route<T extends RequestConfig> = {
     T extends RequestConfigWithQuery ? (params: { query: z.infer<T['query']> }) => string :
     () => string
   )
-};
+} & OmitUnknownFields<Pick<T, 'body' | 'params' | 'query'>>;
 
 export type Contract<T extends ContractConfig> = {
   [h in keyof T]: {
     path: ExactString<T[h]['path']>;
     routes: {
-      [e in keyof T[h]['routes']]: T[h]['routes'][e] extends infer R ?
-        R extends RequestConfigWithBodyAndParamsAndQuery ?
-        Route<R> & Pick<R, 'body' | 'params' | 'query'> :
-        R extends RequestConfigWithBodyAndParams ?
-        Pick<R, 'body' | 'params'> & Route<R> :
-        R extends RequestConfigWithBodyAndQuery ?
-        Pick<R, 'body' | 'query'> & Route<R> :
-        R extends RequestConfigWithParamsAndQuery ? 
-        Pick<R, 'params' | 'query'> & Route<R> :
-        R extends RequestConfigWithParams ? 
-        Pick<R, 'params'> & Route<R> :
-        R extends RequestConfigWithQuery ?
-        Pick<R, 'query'> & Route<R> :
-        R extends RequestConfigWithBody ?
-        Pick<R, 'body'> & Route<R> : R extends BaseRequestConfig ? Route<R> : never : never
+      [e in keyof T[h]['routes']]: Route<T[h]['routes'][e]>;
     }
   }
 };
+
+
+export type InferRoutePayloadType<T extends Pick<BaseRequestConfig, 'body' | 'query' | 'params'>> = (
+  {
+    [Key in 'body' | 'query' | 'params' as T[Key] extends z.ZodTypeAny ? Record<string, never> extends z.infer<T[Key]> ? never : Key : never]: T[Key] extends z.ZodTypeAny ? z.infer<T[Key]> : never;
+  }
+);
+
+export type InferResponsesTypes<T extends (Route<RequestConfig>) | (Record<string, Route<RequestConfig>>)> = (
+  T extends Route<RequestConfig> ? (
+    {
+      [Key in keyof T['responses']]: z.infer<T['responses'][Key]>;
+    }
+  ) : T extends Record<string, Route<RequestConfig>> ? {
+    [ScopeKey in keyof T]: {
+      [ResponseKey in keyof T[ScopeKey]['responses']]: z.infer<T[ScopeKey]['responses'][ResponseKey]>;
+    }
+  } : never
+);
 
 type ExactString<T extends string> = `${T}`;
