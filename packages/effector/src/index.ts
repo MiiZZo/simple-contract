@@ -1,6 +1,8 @@
 import type { Contract, ContractConfig, InferRoutePayloadType } from '@simple-contract/core';
 import { type Query, createQuery } from './create-query';
 
+export { createQuery } from './create-query';
+
 export function initClient<T extends ContractConfig>(contract: Contract<T>) {
   const effects = {} as {
     [Property in keyof T]: {
