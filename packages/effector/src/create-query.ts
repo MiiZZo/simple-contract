@@ -5,6 +5,7 @@ import {
   createStore,
   createEffect,
   sample,
+  Effect,
 } from 'effector';
 import type { z } from 'zod';
 
@@ -25,6 +26,7 @@ export interface Query<Contracts extends Record<string, z.ZodTypeAny>, Params = 
     }
   }
   __kind: symbol;
+  __executorFx: Effect<unknown, unknown, Error>;
 };
 
 export function createQuery<C extends Record<string, z.ZodTypeAny>, Body extends (params: Params) => unknown, Params = void>({
@@ -80,11 +82,15 @@ export function createQuery<C extends Record<string, z.ZodTypeAny>, Body extends
     };
   });
 
+  const loadingStarted = createEvent();
+  const loadingEnded = createEvent();
+
   const query = {
     start: createEvent<Params>(),
     $isPending: createStore(false),
     finished: {},
     __kind: QUERY_KIND,
+    __executorFx: fetcher,
   } as Query<C, Params>;
 
   for (const contractKey in contracts) {
@@ -101,6 +107,18 @@ export function createQuery<C extends Record<string, z.ZodTypeAny>, Body extends
   };
 
   sample({
+    clock: loadingStarted,
+    fn: () => true,
+    target: query.$isPending,
+  });
+
+  sample({
+    clock: loadingEnded,
+    fn: () => false,
+    target: query.$isPending,
+  })
+
+  sample({
     clock: query.start,
     fn: (params) => {
       const url = request.url(params);
@@ -110,7 +128,20 @@ export function createQuery<C extends Record<string, z.ZodTypeAny>, Body extends
 
       return { url };
     },
-    target: fetcher,
+    target: [
+      fetcher,
+      loadingStarted,
+    ],
+  });
+
+  sample({
+    clock: fetcher.doneData,
+    target: validateResponseFx,
+  });
+
+  sample({
+    clock: validateResponseFx.doneData,
+    target: loadingEnded,
   });
 
   for (const key in query.finished) {
@@ -119,6 +150,7 @@ export function createQuery<C extends Record<string, z.ZodTypeAny>, Body extends
       filter: ({ matchedContract }) => matchedContract === key,
       fn: ({ data }) => {
         const $data = query.finished[key].$data;
+
         return data as ReturnType<typeof $data['getState']>;
       },
       target: [
