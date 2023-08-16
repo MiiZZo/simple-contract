@@ -44,6 +44,9 @@ importers:
       cz-conventional-changelog:
         specifier: ^3.3.0
         version: 3.3.0
+      effector:
+        specifier: ^22.8.6
+        version: 22.8.6
       eslint:
         specifier: ~8.15.0
         version: 8.15.0
@@ -91,16 +94,10 @@ importers:
         version: 3.21.4
 
   packages/effector:
-    devDependencies:
-      '@simple-contract/core':
-        specifier: ^0.0.4
-        version: 0.0.4(zod@3.21.4)
+    dependencies:
       effector:
         specifier: ^22.8.6
         version: 22.8.6
-      zod:
-        specifier: 3.21.4
-        version: 3.21.4
 
 packages:
 
@@ -2260,14 +2257,6 @@ packages:
       string-argv: 0.3.2
     dev: true
 
-  /@simple-contract/core@0.0.4(zod@3.21.4):
-    resolution: {integrity: sha512-hsb3n8jZxDGDVq+P+uZ0mDvd1biZQPZhkzJoWFI31yEv1orbOktT8x/UroHBd5iTO3FCZBS+C11XA3iLBuf3tQ==}
-    peerDependencies:
-      zod: 3.21.4
-    dependencies:
-      zod: 3.21.4
-    dev: true
-
   /@swc/helpers@0.5.1:
     resolution: {integrity: sha512-sJ902EfIzn1Fa+qYmjdQqh8tPsoxyBz+8yBKC2HKUxyezKJFwPGOn7pv4WY6QuQW//ySQi5lJjA/ZT9sNWWNTg==}
     dependencies:
@@ -3724,7 +3713,6 @@ packages:
   /effector@22.8.6:
     resolution: {integrity: sha512-Bkg/rlPs7J4dmOFGPLLcL7X0SZeA8WdRnyC2X4tGVo7i6M8oxYwtNOkEUact/zIT/MgqTGm9A8T40dPnr8oXmA==}
     engines: {node: '>=11.0.0'}
-    dev: true
 
   /ejs@3.1.9:
     resolution: {integrity: sha512-rC+QVNMJWv+MtPgkt0y+0rVEIdbtxVADApW9JXrUVlzHetgcyczP/E7DJmWJ4fJCZF2cPcBk0laWO9ZHMG3DmQ==}
