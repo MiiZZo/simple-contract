@@ -2,27 +2,23 @@ import { allSettled, fork } from 'effector';
 import { z } from 'zod';
 import { createQuery } from './create-query';
 
-const getQuery = () => createQuery({
-  contracts: {
-    success: z.object({
-      title: z.string()
-    }),
-  },
-  params: {} as { title: string },
-  request: {
-    method: 'GET',
-    url: () => 'http://localhost:3000',
-    body: (params) => params,
-  }
-});
-
 describe('createQuery', () => {
   let scope = fork();
-  let query = getQuery();
+  const query = createQuery({
+    contracts: {
+      success: z.object({
+        title: z.string()
+      }),
+    },
+    params: {} as { title: string },
+    request: {
+      method: 'GET',
+      url: () => 'http://localhost:3000',
+      body: (params) => params,
+    }
+  });
 
   afterEach(() => {
-    query = getQuery();
-
     query.__executorFx.use(() => ({
       title: '',
     }));
@@ -61,6 +57,21 @@ describe('createQuery', () => {
     });
 
     expect(executorWatcher).toBeCalledWith({ body: { title: 'help' }, url: 'http://localhost:3000' });
+  });
+
+  it('should pass body to executorFx if body exists in query config', async () => {
+    const executorWatcher = vi.fn();
+    
+    query.__executorFx.watch(executorWatcher);
+
+    await allSettled(query.start, {
+      scope,
+      params: {
+        title: 'hello',
+      },
+    });
+
+    expect(executorWatcher).toHaveBeenCalledWith(({ url: 'http://localhost:3000', body: { title: 'hello' } }));
   });
   
   it('should trigger success event only and pass result data to success.$data', async () => {
