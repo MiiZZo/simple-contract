@@ -1,7 +1,16 @@
+import { Store } from 'effector';
 import type { Contract, ContractConfig, InferRoutePayloadType } from '@simple-contract/core';
 import { type Query, createQuery } from './create-query';
 
-export function initClient<T extends ContractConfig>(contract: Contract<T>) {
+interface Config<T extends ContractConfig> {
+  contract: Contract<T>;
+  baseHeaders: Record<string, string | Store<string>>;
+}
+
+export function initClient<T extends ContractConfig>({
+  contract,
+  baseHeaders,
+}: Config<T>) {
   const effects = {} as {
     [Property in keyof T]: {
       [RouteKey in keyof T[Property]['routes'] as `${string & RouteKey}Query`]: (
@@ -21,7 +30,8 @@ export function initClient<T extends ContractConfig>(contract: Contract<T>) {
       const request = {
         method: route.method,
         url: route.getFullDynamicPath,
-        body: 'body' in route ? (params: any) => params.body : undefined
+        body: 'body' in route ? (params: any) => params.body : undefined,
+        headers: baseHeaders,
       };
 
       //@ts-expect-error should i fix that?

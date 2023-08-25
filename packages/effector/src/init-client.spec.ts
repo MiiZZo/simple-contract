@@ -13,20 +13,25 @@ vi.mock('./create-query.ts', () => {
 
 describe('initClient', () => { 
   beforeEach(() => {
-    initClient(createContract('http://localhost:3000', {
-      users: {
-        path: '/users',
-        routes: {
-          createOne: {
-            method: 'POST',
-            body: z.object({
-              title: z.string(),
-            }),
-            responses: {},
+    initClient({
+      contract: createContract('http://localhost:3000', {
+        users: {
+          path: '/users',
+          routes: {
+            createOne: {
+              method: 'POST',
+              body: z.object({
+                title: z.string(),
+              }),
+              responses: {},
+            }
           }
-        }
+        },
+      }),
+      baseHeaders: {
+        'Some-Header': 'Some-Value'
       },
-    }));
+    });
   });
 
   it('should pass body to createQuery if it was provided in contract', async () => {
@@ -34,6 +39,18 @@ describe('initClient', () => {
       expect.objectContaining({
         request: expect.objectContaining({
           body: expect.any(Function)
+        }),
+      }),
+    );
+  });
+
+  it('should pass baseHeaders to createQuery if it was provided in config', async () => {
+    expect(mocks.createQuery).toBeCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          headers: {
+            'Some-Header': 'Some-Value'
+          },
         }),
       }),
     );

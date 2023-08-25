@@ -6,6 +6,7 @@ import {
   createEffect,
   sample,
   Effect,
+  is,
 } from 'effector';
 import type { z } from 'zod';
 
@@ -38,16 +39,32 @@ export function createQuery<C extends Record<string, z.ZodTypeAny>, Body extends
     url: (params: Params) => string;
     method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
     body?: Body;
-    headers?: Record<string, string>;
+    headers?: Record<string, string | Store<any>>;
   },
   contracts: C,
 }): Query<C, Params> {
+  const simpleHeaders: Record<string, string> = {};
+  const storeHeaders: Record<string, Store<string>> = {};
+
+  for (const key in request.headers) {
+    const header = request.headers[key];
+
+    if (is.store(header)) {
+      storeHeaders[key] = header;
+    } else {
+      simpleHeaders[key] = header;
+    }
+  }
+
   const fetcher = createEffect(async ({
     url,
     body,
-  }: { url: string; body?: unknown }) => {
+    extraHeaders,
+  }: { url: string; extraHeaders?: Record<string, any>; body?: unknown }) => {
+
     const headers: Record<string, string> = {
-      ...request.headers,
+      ...simpleHeaders,
+      ...extraHeaders,
     };
     
     if (body) {
@@ -120,10 +137,11 @@ export function createQuery<C extends Record<string, z.ZodTypeAny>, Body extends
 
   sample({
     clock: query.start,
-    fn: (params) => {
+    source: storeHeaders,
+    fn: (headers, params) => {
       const url = request.url(params);
       if (request.body) {
-        return { body: request.body(params), url }
+        return { body: request.body(params), extraHeaders: headers, url }
       }
 
       return { url };

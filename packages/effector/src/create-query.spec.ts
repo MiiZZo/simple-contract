@@ -1,9 +1,11 @@
-import { allSettled, fork } from 'effector';
+import { allSettled, createStore, fork } from 'effector';
 import { z } from 'zod';
 import { createQuery } from './create-query';
 
 describe('createQuery', () => {
   let scope = fork();
+  const headerStore = createStore('Bearer 12345');
+
   const query = createQuery({
     contracts: {
       success: z.object({
@@ -15,6 +17,10 @@ describe('createQuery', () => {
       method: 'GET',
       url: () => 'http://localhost:3000',
       body: (params) => params,
+      headers: {
+        someHeader: '',
+        headerStore,
+      },
     }
   });
 
@@ -56,7 +62,15 @@ describe('createQuery', () => {
       }
     });
 
-    expect(executorWatcher).toBeCalledWith({ body: { title: 'help' }, url: 'http://localhost:3000' });
+    expect(executorWatcher).toBeCalledWith({
+      body: {
+        title: 'help'
+      },
+      url: 'http://localhost:3000',
+      extraHeaders: {
+        headerStore: 'Bearer 12345'
+      },
+    });
   });
 
   it('should pass body to executorFx if body exists in query config', async () => {
@@ -71,7 +85,11 @@ describe('createQuery', () => {
       },
     });
 
-    expect(executorWatcher).toHaveBeenCalledWith(({ url: 'http://localhost:3000', body: { title: 'hello' } }));
+    expect(executorWatcher).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: { title: 'hello' }
+      })
+    );
   });
   
   it('should trigger success event only and pass result data to success.$data', async () => {
