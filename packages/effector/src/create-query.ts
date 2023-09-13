@@ -139,12 +139,15 @@ export function createQuery<C extends Record<string, z.ZodTypeAny>, Body extends
     clock: query.start,
     source: storeHeaders,
     fn: (headers, params) => {
-      const url = request.url(params);
+      let body;
+
       if (request.body) {
-        return { body: request.body(params), extraHeaders: headers, url }
+        body = request.body(params);
       }
 
-      return { url };
+      const url = request.url(params);
+
+      return { url, extraHeaders: headers, body };
     },
     target: [
       fetcher,
